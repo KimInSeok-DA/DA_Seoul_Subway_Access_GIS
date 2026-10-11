@@ -32,6 +32,8 @@ def norm_name(name: str) -> str:
 
 def load_national() -> gpd.GeoDataFrame:
     df = pd.read_excel(NAT, dtype=str)
+    # 같은 노선·역번호가 이름만 달리 두 번 있는 행(예: 7호선 0736 '이수'와 '총신대입구(이수)') → 괄호 부기가 있는 쪽을 남김
+    df = df.sort_values("역사명", key=lambda s: ~s.str.contains(r"\(")).drop_duplicates(["노선명", "역번호"])
     df["key"] = df["역사명"].map(norm_name)
     # 기준일: '1900-01-00' 같은 잘못된 값은 결측으로
     df["기준일"] = pd.to_datetime(df["데이터기준일자"].str[:10], errors="coerce")
@@ -106,6 +108,7 @@ def merge_stations(nat: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
             "n_rows": len(grp),
             "coord_fixed": bool(grp["coord_fixed"].any()),
             "ref_date": grp["기준일"].max().strftime("%Y-%m-%d") if grp["기준일"].notna().any() else None,
+            "addresses": " | ".join(sorted(set(grp["역사도로명주소"].dropna()))),  # 검증용(괄호 안 법정동)
             "geometry": grp.geometry.union_all().centroid,  # 노선별 행의 가운데(m 좌표계)
         })
     return gpd.GeoDataFrame(out, geometry="geometry", crs=CRS_M)
@@ -122,7 +125,7 @@ def main() -> None:
     st.to_file(OUT, driver="GeoJSON")
     fixes.to_csv(FIXES, index=False, encoding="utf-8-sig")
 
-    print(f"원본 {len(nat)}행 → 역 {len(st)}개 (좌표 보정 {len(fixes)}행)")
+    print(f"원본 {pd.read_excel(NAT, usecols=[0]).shape[0]}행 → 중복 행 제거 후 {len(nat)}행 → 역 {len(st)}개 (좌표 보정 {len(fixes)}행)")
     print(f"저장 → {OUT.relative_to(ROOT)}, {FIXES.relative_to(ROOT)}")
 
 
