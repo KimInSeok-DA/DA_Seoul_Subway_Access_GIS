@@ -1,0 +1,18 @@
+{
+  "emd": {
+    "layer_id": "aa9dbffbf4eb404ca4c103d55bbd4fd3",
+    "source_id": "1765243386fe49e0a49193094bcc66e5",
+    "title": "서울 법정동별 지하철 접근성",
+    "count": 467,
+    "updated": "2026-10-11",
+    "url": "https://www.arcgis.com/home/item.html?id=aa9dbffbf4eb404ca4c103d55bbd4fd3"
+  },
+  "stations": {
+    "layer_id": "5ade91d871fe4f659a9485a4b1010ac2",
+    "source_id": "d9655d548448457aa0f1768664d5d230",
+    "title": "서울 및 주변 5km 지하철역",
+    "count": 389,
+    "updated": "2026-10-11",
+    "url": "https://www.arcgis.com/home/item.html?id=5ade91d871fe4f659a9485a4b1010ac2"
+  }
+}
