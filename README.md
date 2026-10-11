@@ -46,6 +46,7 @@ API 키와 ArcGIS 로그인 정보는 `.env`로 받습니다(`.env.example` 참�
 | 정제 | `src/build_stations.py` | 역 이름 통일, 좌표 오류 보정, 노선별 행을 역 단위로 통합 |
 | 지표 | `src/compute_metrics.py` | EPSG:5179에서 `near_dist_m`·`n_station`·`cover_500m` 계산 |
 | 검증 | `src/validate.py` | 21개 검사, 실패하면 종료 코드 1 |
+| 게시 | `src/publish.py` | 검증 통과 시 Hosted Feature Layer 2개를 File Geodatabase로 게시, 이후 같은 항목 덮어쓰기, 항목 정보(출처·이용 조건·기준일) 작성 |
 
 ## 검증
 
@@ -61,10 +62,27 @@ API 키와 ArcGIS 로그인 정보는 `.env`로 받습니다(`.env.example` 참�
 
 **발견한 원본 오류**: 공공데이터 원본에서 4호선 이촌역 좌표가 신용산역과 14m, 5호선 마곡역 좌표가 발산역과 7m 떨어져 있었습니다(실제로는 각각 1km 안팎). 서울시 역사마스터와 대조해 보정했고, 보정하지 않은 데이터로 검증을 돌리면 실패하는 것을 확인했습니다. 보정 내역: [`outputs/station_fixes.csv`](outputs/station_fixes.csv). 또 7호선 이수역이 `이수`와 `총신대입구(이수)` 두 행으로 중복되어 있어, 한 역이 두 번 세어지던 것을 독립 재검증에서 찾아 고쳤습니다.
 
-## 공개 링크
+## 결과 화면 (ArcGIS Online)
 
-- ArcGIS Online 앱: 준비 중
-- Web Map: 준비 중
+Python(`src/publish.py`)으로 Hosted Feature Layer 2개를 게시·갱신하고, Map Viewer로 웹맵을 구성했습니다.
+
+**웹맵: 가장 가까운 역까지 거리(단계구분도) + 지하철역(점)**
+
+![웹맵과 범례](docs/images/01_webmap_legend.png)
+
+| 법정동 팝업 | 역 팝업 |
+|---|---|
+| ![법정동 팝업](docs/images/03_popup_emd.png) | ![역 팝업](docs/images/04_popup_station.png) |
+
+**코드로 채운 항목 정보(요약·설명·출처·이용 조건)와 게시된 항목**
+
+| 법정동 레이어 항목 | 역 레이어 항목 |
+|---|---|
+| ![법정동 레이어 항목](docs/images/06_item_emd.png) | ![역 레이어 항목](docs/images/07_item_stations.png) |
+
+![내 콘텐츠: 웹맵 1개, Feature Layer 2개, 원본 FGDB 2개](docs/images/05_arcgis_content.png)
+
+**공개 범위**: ArcGIS Location Platform 무료 계정은 Hosted Feature Layer의 공개(Everyone) 공유를 지원하지 않습니다([Esri 문서](https://developers.arcgis.com/documentation/portal-and-data-services/data-services/feature-services/sharing-and-security/)). 그래서 ArcGIS 항목은 비공개로 운영하고, 결과는 위 화면으로 보여 줍니다. 로그인 없이 열어 볼 수 있는 지도는 GitHub Pages로 따로 제공할 예정입니다.
 
 ## 한계
 
