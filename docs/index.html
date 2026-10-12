@@ -33,6 +33,17 @@
       <p>거리·면적은 EPSG:5179(m)에서 계산했고, 서울 경계 근처 동을 위해 서울 밖 5km 안의 역도 포함했습니다. 건수·코드·도형·역 주소 대조 등 21개 자동 검증을 통과한 결과입니다. 지도용으로 경계를 5m 단위로 단순화했습니다(지표는 원본 경계로 계산).</p>
     </details>
 
+    <details>
+      <summary>데이터 내려받기</summary>
+      <ul class="dl">
+        <li>GeoPackage(레이어 2개): <a href="downloads/seoul_subway_access.gpkg">gpkg</a></li>
+        <li>Shapefile: <a href="downloads/seoul_subway_access_emd_shp.zip">법정동</a> · <a href="downloads/seoul_subway_access_stations_shp.zip">역</a> (필드 이름 10자 제한으로 near_stn·near_dist·coord_fix로 줄임)</li>
+        <li>CSV(속성 + 점 좌표): <a href="downloads/seoul_subway_access_emd.csv">법정동</a> · <a href="downloads/seoul_subway_access_stations.csv">역</a></li>
+        <li>GeoJSON: <a href="https://github.com/KimInSeok-DA/DA_Seoul_Subway_Access_GIS/raw/main/data/processed/seoul_emd_metrics.geojson">법정동</a> · <a href="https://github.com/KimInSeok-DA/DA_Seoul_Subway_Access_GIS/raw/main/data/processed/stations_study.geojson">역</a></li>
+      </ul>
+      <p>좌표계 EPSG:4326, 인코딩 UTF-8. 이용 시 아래 출처를 표시해 주세요(공공누리 제1유형 자료 포함).</p>
+    </details>
+
     <p class="links">
       <a href="https://github.com/KimInSeok-DA/DA_Seoul_Subway_Access_GIS">코드·문서(GitHub)</a> ·
       <a href="https://github.com/KimInSeok-DA/DA_Seoul_Subway_Access_GIS/blob/main/outputs/validation_report.md">검증 리포트</a>

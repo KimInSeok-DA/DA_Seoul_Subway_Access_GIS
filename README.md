@@ -47,6 +47,7 @@ API 키와 ArcGIS 로그인 정보는 `.env`로 받습니다(`.env.example` 참�
 | 지표 | `src/compute_metrics.py` | EPSG:5179에서 `near_dist_m`·`n_station`·`cover_500m` 계산 |
 | 검증 | `src/validate.py` | 21개 검사, 실패하면 종료 코드 1 |
 | 공개 지도 | `src/build_web.py` | 검증 통과 시 경계를 단순화(5m)해 `docs/map/data.js` 생성 → GitHub Pages(Leaflet) |
+| 내려받기 | `src/export_formats.py` | GeoPackage·Shapefile·CSV 내보내기, 다시 읽어 원본과 건수·값 대조 |
 | 게시 | `src/publish.py` | 검증 통과 시 Hosted Feature Layer 2개를 File Geodatabase로 게시, 이후 같은 항목 덮어쓰기, 항목 정보(출처·이용 조건·기준일) 작성 |
 
 ## 검증
@@ -63,7 +64,40 @@ API 키와 ArcGIS 로그인 정보는 `.env`로 받습니다(`.env.example` 참�
 
 **발견한 원본 오류**: 공공데이터 원본에서 4호선 이촌역 좌표가 신용산역과 14m, 5호선 마곡역 좌표가 발산역과 7m 떨어져 있었습니다(실제로는 각각 1km 안팎). 서울시 역사마스터와 대조해 보정했고, 보정하지 않은 데이터로 검증을 돌리면 실패하는 것을 확인했습니다. 보정 내역: [`outputs/station_fixes.csv`](outputs/station_fixes.csv). 또 7호선 이수역이 `이수`와 `총신대입구(이수)` 두 행으로 중복되어 있어, 한 역이 두 번 세어지던 것을 독립 재검증에서 찾아 고쳤습니다.
 
-## 결과 화면 (ArcGIS Online)
+## 데이터 내려받기
+
+공개 지도 왼쪽 "데이터 내려받기"나 아래 링크에서 받을 수 있습니다. 좌표계 EPSG:4326, 인코딩 UTF-8. 이용 시 위 데이터 출처를 표시해 주세요.
+
+| 포맷 | 파일 | 비고 |
+|---|---|---|
+| GeoPackage | [`seoul_subway_access.gpkg`](docs/downloads/seoul_subway_access.gpkg) | 레이어 `emd`(법정동 467), `stations`(역 389) |
+| Shapefile | [법정동](docs/downloads/seoul_subway_access_emd_shp.zip) · [역](docs/downloads/seoul_subway_access_stations_shp.zip) | 필드 이름 10자 제한: `near_station`→`near_stn`, `near_dist_m`→`near_dist`, `coord_fixed`→`coord_fix` |
+| CSV | [법정동](docs/downloads/seoul_subway_access_emd.csv) · [역](docs/downloads/seoul_subway_access_stations.csv) | 도형 없이 속성 + 점 좌표(법정동은 대표점 `rep_lon`·`rep_lat`) |
+| GeoJSON | [법정동](data/processed/seoul_emd_metrics.geojson) · [역](data/processed/stations_study.geojson) | 파이프라인 결과 원본 |
+
+**필드**
+
+| 필드 | 뜻 |
+|---|---|
+| `bjd_cd` | 법정동코드(10자리, 문자열) |
+| `sgg_cd`·`sgg_nm`·`emd_nm`·`full_nm` | 시군구코드·구 이름·법정동 이름·전체 이름 |
+| `area_km2` | 면적(㎢, EPSG:5179) |
+| `near_station`·`near_dist_m` | 가장 가까운 역과 대표점에서의 직선거리(m) |
+| `n_station` | 동 경계 안의 역 수(환승역 1개) |
+| `cover_500m` | 역 500m 반경이 덮는 면적 비율(%) |
+| `collected` | 경계 수집일 |
+| `station_id`·`name`·`name_full` | 역 ID·통일 이름·원래 표기 |
+| `lines`·`n_lines`·`operators` | 노선 목록(`;` 구분)·노선 수·운영기관 |
+| `in_seoul`·`coord_fixed` | 서울 안 여부·원본 좌표 보정 여부(1=예) |
+| `ref_date` | 역 데이터 기준일(노선별 행 중 가장 최근) |
+
+## 결과 화면
+
+**공개 지도(GitHub Pages, Leaflet)**
+
+![공개 지도](docs/images/08_public_map.png)
+
+### ArcGIS Online
 
 Python(`src/publish.py`)으로 Hosted Feature Layer 2개를 게시·갱신하고, Map Viewer로 웹맵을 구성했습니다.
 
