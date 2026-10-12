@@ -47,6 +47,7 @@ API 키와 ArcGIS 로그인 정보는 `.env`로 받습니다(`.env.example` 참�
 | 지표 | `src/compute_metrics.py` | EPSG:5179에서 `near_dist_m`·`n_station`·`cover_500m` 계산 |
 | 검증 | `src/validate.py` | 21개 검사, 실패하면 종료 코드 1 |
 | 교차 검증(선택) | `src/crosscheck_postgis.py`, `sql/metrics.sql` | Docker PostGIS에서 같은 지표를 SQL로 다시 계산해 대조(`docker compose up -d` 후 실행) |
+| 도보 비교(선택) | `src/routing_compare.py` | ArcGIS 경로 서비스로 대표점→역 도보 거리(1,401건)를 구해 직선거리와 비교, 요약만 공개 |
 | 공개 지도 | `src/build_web.py` | 검증 통과 시 경계를 단순화(1m, 동별 면적 차이 1% 넘으면 중단)해 `docs/map/data.js` 생성 → GitHub Pages(Leaflet) |
 | 내려받기 | `src/export_formats.py` | GeoPackage·Shapefile·CSV 내보내기, 다시 읽어 원본과 건수·값 대조 |
 | 게시 | `src/publish.py` | 검증 통과 시 Hosted Feature Layer 2개를 File Geodatabase로 게시, 이후 같은 항목 덮어쓰기, 항목 정보(출처·이용 조건·기준일) 작성 |
@@ -64,6 +65,8 @@ API 키와 ArcGIS 로그인 정보는 `.env`로 받습니다(`.env.example` 참�
 - 최신성: 경계 수집일, 역별 데이터 기준일
 
 **PostGIS 교차 검증**: 같은 원본을 Docker의 PostGIS에 넣고 지표를 SQL(`ST_Transform`, `ST_DWithin`, `ST_PointOnSurface`와 KNN `<->`, `ST_Within`, `ST_Buffer`·`ST_Intersection`)로 다시 계산했습니다. 467개 동 모두 Python 결과와 완전히 일치합니다([`outputs/postgis_crosscheck.md`](outputs/postgis_crosscheck.md)). 버퍼 원의 분할 수만 바꿔도 251개 동이 달라지는 것을 확인해, 비교가 작은 차이도 잡는다는 것을 검증했습니다.
+
+**도보 거리 비교(ArcGIS 경로 서비스)**: 동 대표점에서 가까운 역 3개까지 도보 경로 1,401건을 구했습니다. 같은 역까지 도보 거리는 직선의 중앙값 **1.36배**, 가장 가까운 역까지 중앙값은 직선 412m → 도보 **618m**이고, 467개 동 중 281개가 도보로 보면 거리 구간이 한 단계 이상 멀어집니다([`outputs/routing_summary.md`](outputs/routing_summary.md)). 경로 결과의 저장·공개 조건을 확인하지 못해 동별 값은 공개하지 않고 요약만 싣습니다.
 
 **발견한 원본 오류**: 공공데이터 원본에서 4호선 이촌역 좌표가 신용산역과 14m, 5호선 마곡역 좌표가 발산역과 7m 떨어져 있었습니다(실제로는 각각 1km 안팎). 서울시 역사마스터와 대조해 보정했고, 보정하지 않은 데이터로 검증을 돌리면 실패하는 것을 확인했습니다. 보정 내역: [`outputs/station_fixes.csv`](outputs/station_fixes.csv). 또 7호선 이수역이 `이수`와 `총신대입구(이수)` 두 행으로 중복되어 있어, 한 역이 두 번 세어지던 것을 독립 재검증에서 찾아 고쳤습니다.
 
@@ -124,7 +127,8 @@ Python(`src/publish.py`)으로 Hosted Feature Layer 2개를 게시·갱신하고
 
 ## 한계
 
-- 직선거리입니다. 실제 걷는 거리·출입구 위치는 반영하지 않습니다(도보 거리 비교는 추가 예정)
+- 지표는 직선거리입니다. 도보 거리는 중앙값 1.36배 길고(위 도보 비교), 출입구 위치는 반영하지 않습니다
+- 법정동 경계가 한강까지 이어지는 동은 대표점이 강변에 찍힐 수 있어, 그 동의 거리 지표가 실제 주거지 기준과 다를 수 있습니다(토정동·양평동 등)
 - GTX-A는 기준 데이터에 없어 넣지 않았습니다. 서울 안 GTX 역은 기존 역과 같은 자리라 영향이 작습니다
 - 역 데이터의 기준일이 운영기관마다 2022～2026으로 다릅니다
 - 법정동은 크기가 0.01～18㎢로 차이가 커서, 산지가 넓은 동(평창동 등)은 `near_dist_m`가 크게 나옵니다
