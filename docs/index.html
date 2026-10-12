@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>서울 법정동별 지하철 접근성</title>
+  <meta name="description" content="공공데이터로 계산하고 자동 검증을 통과한 서울 법정동 467개의 지하철 접근성 지표 지도">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <link rel="stylesheet" href="map/style.css">
+</head>
+<body>
+  <aside id="panel">
+    <h1>서울 법정동별 지하철 접근성</h1>
+    <p class="lead">서울 법정동 <b id="n-emd"></b>개마다 지하철 접근성을 공공데이터로 계산했습니다. 동을 누르면 값이 나옵니다.</p>
+
+    <fieldset id="metric">
+      <legend>색으로 볼 지표</legend>
+      <label><input type="radio" name="metric" value="near_dist_m" checked> 가장 가까운 역까지 거리</label>
+      <label><input type="radio" name="metric" value="cover_500m"> 역 500m 안 면적 비율</label>
+      <label><input type="radio" name="metric" value="n_station"> 동 안의 역 수</label>
+    </fieldset>
+
+    <div id="legend"></div>
+    <label class="toggle"><input type="checkbox" id="show-stations" checked> 지하철역 <span id="n-st"></span>개 표시</label>
+
+    <details>
+      <summary>지표 계산 방법</summary>
+      <ul>
+        <li><b>가장 가까운 역까지 거리</b>: 동 대표점(폴리곤 안의 점)에서 가장 가까운 역까지 직선거리</li>
+        <li><b>역 500m 안 면적 비율</b>: 역 500m 반경이 동 면적을 덮는 비율</li>
+        <li><b>동 안의 역 수</b>: 동 경계 안의 역 수(환승역은 1개)</li>
+      </ul>
+      <p>거리·면적은 EPSG:5179(m)에서 계산했고, 서울 경계 근처 동을 위해 서울 밖 5km 안의 역도 포함했습니다. 건수·코드·도형·역 주소 대조 등 21개 자동 검증을 통과한 결과입니다. 지도용으로 경계를 5m 단위로 단순화했습니다(지표는 원본 경계로 계산).</p>
+    </details>
+
+    <p class="links">
+      <a href="https://github.com/KimInSeok-DA/DA_Seoul_Subway_Access_GIS">코드·문서(GitHub)</a> ·
+      <a href="https://github.com/KimInSeok-DA/DA_Seoul_Subway_Access_GIS/blob/main/outputs/validation_report.md">검증 리포트</a>
+    </p>
+    <p class="source">
+      출처: 국토교통부 행정구역도(VWorld WFS, 공공누리 제1유형), 국가철도공단 전국도시철도역사정보표준데이터,
+      서울특별시 서울시 역사마스터 정보(공공누리 제1유형), 국토교통부 전국 법정동. 경계 수집 <span id="collected"></span>.
+    </p>
+  </aside>
+  <main id="map" aria-label="서울 법정동별 지하철 접근성 지도"></main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="map/data.js"></script>
+  <script src="map/app.js"></script>
+</body>
+</html>

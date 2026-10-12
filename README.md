@@ -1,6 +1,6 @@
 # 서울 법정동별 지하철 접근성 지도
 
-> 진행 중입니다. 아래 수치·링크는 실제 실행 결과가 나오면 채웁니다.
+> **공개 지도**: https://kiminseok-da.github.io/DA_Seoul_Subway_Access_GIS/ (로그인 없이 열림)
 
 서울 법정동마다 지하철 접근성 지표를 공공데이터로 계산하고, ArcGIS Online에 Feature Layer·Web Map·앱으로 공개하는 개인 프로젝트입니다.
 
@@ -46,6 +46,7 @@ API 키와 ArcGIS 로그인 정보는 `.env`로 받습니다(`.env.example` 참�
 | 정제 | `src/build_stations.py` | 역 이름 통일, 좌표 오류 보정, 노선별 행을 역 단위로 통합 |
 | 지표 | `src/compute_metrics.py` | EPSG:5179에서 `near_dist_m`·`n_station`·`cover_500m` 계산 |
 | 검증 | `src/validate.py` | 21개 검사, 실패하면 종료 코드 1 |
+| 공개 지도 | `src/build_web.py` | 검증 통과 시 경계를 단순화(5m)해 `docs/map/data.js` 생성 → GitHub Pages(Leaflet) |
 | 게시 | `src/publish.py` | 검증 통과 시 Hosted Feature Layer 2개를 File Geodatabase로 게시, 이후 같은 항목 덮어쓰기, 항목 정보(출처·이용 조건·기준일) 작성 |
 
 ## 검증
@@ -82,7 +83,7 @@ Python(`src/publish.py`)으로 Hosted Feature Layer 2개를 게시·갱신하고
 
 ![내 콘텐츠: 웹맵 1개, Feature Layer 2개, 원본 FGDB 2개](docs/images/05_arcgis_content.png)
 
-**공개 범위**: ArcGIS Location Platform 무료 계정은 Hosted Feature Layer의 공개(Everyone) 공유를 지원하지 않습니다([Esri 문서](https://developers.arcgis.com/documentation/portal-and-data-services/data-services/feature-services/sharing-and-security/)). 그래서 ArcGIS 항목은 비공개로 운영하고, 결과는 위 화면으로 보여 줍니다. 로그인 없이 열어 볼 수 있는 지도는 GitHub Pages로 따로 제공할 예정입니다.
+**공개 범위**: ArcGIS Location Platform 무료 계정은 Hosted Feature Layer의 공개(Everyone) 공유를 지원하지 않습니다([Esri 문서](https://developers.arcgis.com/documentation/portal-and-data-services/data-services/feature-services/sharing-and-security/)). 그래서 ArcGIS 항목은 비공개로 운영하고, 결과는 위 화면으로 보여 줍니다. 로그인 없이 열어 볼 수 있는 지도는 [GitHub Pages](https://kiminseok-da.github.io/DA_Seoul_Subway_Access_GIS/)로 따로 제공합니다(같은 결과 파일, Leaflet).
 
 ## 한계
 
