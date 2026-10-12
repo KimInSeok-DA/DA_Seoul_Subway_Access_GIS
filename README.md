@@ -47,7 +47,7 @@ API 키와 ArcGIS 로그인 정보는 `.env`로 받습니다(`.env.example` 참�
 | 지표 | `src/compute_metrics.py` | EPSG:5179에서 `near_dist_m`·`n_station`·`cover_500m` 계산 |
 | 검증 | `src/validate.py` | 21개 검사, 실패하면 종료 코드 1 |
 | 교차 검증(선택) | `src/crosscheck_postgis.py`, `sql/metrics.sql` | Docker PostGIS에서 같은 지표를 SQL로 다시 계산해 대조(`docker compose up -d` 후 실행) |
-| 공개 지도 | `src/build_web.py` | 검증 통과 시 경계를 단순화(5m)해 `docs/map/data.js` 생성 → GitHub Pages(Leaflet) |
+| 공개 지도 | `src/build_web.py` | 검증 통과 시 경계를 단순화(1m, 동별 면적 차이 1% 넘으면 중단)해 `docs/map/data.js` 생성 → GitHub Pages(Leaflet) |
 | 내려받기 | `src/export_formats.py` | GeoPackage·Shapefile·CSV 내보내기, 다시 읽어 원본과 건수·값 대조 |
 | 게시 | `src/publish.py` | 검증 통과 시 Hosted Feature Layer 2개를 File Geodatabase로 게시, 이후 같은 항목 덮어쓰기, 항목 정보(출처·이용 조건·기준일) 작성 |
 
