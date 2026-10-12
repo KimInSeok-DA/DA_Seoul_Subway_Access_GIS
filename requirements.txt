@@ -6,3 +6,7 @@ pandas==3.0.6
 openpyxl==3.1.5
 requests==2.34.2
 python-dotenv==1.2.4
+psycopg==3.3.6
+psycopg-binary==3.3.6
+sqlalchemy==2.1.4
+geoalchemy2==0.20.0
