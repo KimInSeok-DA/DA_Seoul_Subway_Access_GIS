@@ -1,0 +1,11 @@
+# 파이프라인이 만드는 데이터 파일은 LF 그대로 둔다(Windows의 자동 CRLF 변환 때문에 내용이 같아도 변경으로 잡히는 것 방지)
+data/processed/*.geojson text eol=lf
+docs/map/data.js text eol=lf
+docs/downloads/*.csv text eol=lf
+outputs/*.csv text eol=lf
+outputs/*.md text eol=lf
+outputs/*.json text eol=lf
+# 바이너리
+*.gpkg binary
+*.zip binary
+*.png binary

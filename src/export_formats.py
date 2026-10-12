@@ -6,9 +6,14 @@
 - GeoJSON은 data/processed/에 이미 있어 복사하지 않고 공개 지도에서 저장소 원본으로 링크한다
 
 모든 파일을 다시 읽어 건수·값이 원본과 같은지 확인하고, 다르면 멈춘다.
+파일 안에 들어가는 날짜(GPKG 변경 시각, .dbf 헤더 날짜, zip 항목 시각)는 실행 시각 대신 경계 수집일로 고정한다.
+→ 데이터가 같으면 파일도 바이트까지 같아서, 다시 실행해도 git에 변경으로 잡히지 않는다.
 """
+import os
 import shutil
 import tempfile
+import zipfile
+from datetime import date
 from pathlib import Path
 
 import geopandas as gpd
@@ -37,6 +42,23 @@ def load() -> tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
     return emd, st
 
 
+def fix_dbf_date(dbf: Path, d: date) -> None:
+    """.dbf 헤더 1～3바이트(마지막 수정일: 1900년부터 연, 월, 일)를 고정 날짜로"""
+    b = bytearray(dbf.read_bytes())
+    b[1:4] = bytes([d.year - 1900, d.month, d.day])
+    dbf.write_bytes(bytes(b))
+
+
+def fixed_zip(src_dir: Path, out_zip: Path, d: date) -> None:
+    """파일 순서·시각·권한을 고정한 zip"""
+    with zipfile.ZipFile(out_zip, "w", zipfile.ZIP_DEFLATED) as z:
+        for f in sorted(src_dir.iterdir()):
+            info = zipfile.ZipInfo(f.name, date_time=(d.year, d.month, d.day, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.external_attr = 0o644 << 16
+            z.writestr(info, f.read_bytes())
+
+
 def same(a: pd.DataFrame, b: pd.DataFrame, cols: list[str], name: str) -> None:
     if len(a) != len(b):
         raise RuntimeError(f"{name}: 건수 {len(b)} != {len(a)}")
@@ -49,6 +71,8 @@ def same(a: pd.DataFrame, b: pd.DataFrame, cols: list[str], name: str) -> None:
 
 def main() -> None:
     emd, st = load()
+    stamp = date.fromisoformat(emd["collected"].iloc[0])
+    os.environ["OGR_CURRENT_DATE"] = f"{stamp.isoformat()}T00:00:00.000Z"  # GDAL이 GPKG에 쓰는 변경 시각
     if OUT.exists():
         shutil.rmtree(OUT)
     OUT.mkdir(parents=True)
@@ -68,7 +92,8 @@ def main() -> None:
         g.rename(columns=SHP_NAMES).to_file(d / f"{BASE}_{layer}.shp", encoding="UTF-8")
         back = gpd.read_file(d / f"{BASE}_{layer}.shp").rename(columns={v: k for k, v in SHP_NAMES.items()})
         same(g, back, cols, f"SHP {layer}")
-        shutil.make_archive(str(OUT / f"{BASE}_{layer}_shp"), "zip", root_dir=d)
+        fix_dbf_date(d / f"{BASE}_{layer}.dbf", stamp)
+        fixed_zip(d, OUT / f"{BASE}_{layer}_shp.zip", stamp)
 
     # CSV(속성 + 점 좌표)
     rep = emd.to_crs(5179).representative_point().to_crs(4326)
