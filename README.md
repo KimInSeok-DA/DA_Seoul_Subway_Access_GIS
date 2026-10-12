@@ -46,6 +46,7 @@ API 키와 ArcGIS 로그인 정보는 `.env`로 받습니다(`.env.example` 참�
 | 정제 | `src/build_stations.py` | 역 이름 통일, 좌표 오류 보정, 노선별 행을 역 단위로 통합 |
 | 지표 | `src/compute_metrics.py` | EPSG:5179에서 `near_dist_m`·`n_station`·`cover_500m` 계산 |
 | 검증 | `src/validate.py` | 21개 검사, 실패하면 종료 코드 1 |
+| 교차 검증(선택) | `src/crosscheck_postgis.py`, `sql/metrics.sql` | Docker PostGIS에서 같은 지표를 SQL로 다시 계산해 대조(`docker compose up -d` 후 실행) |
 | 공개 지도 | `src/build_web.py` | 검증 통과 시 경계를 단순화(5m)해 `docs/map/data.js` 생성 → GitHub Pages(Leaflet) |
 | 내려받기 | `src/export_formats.py` | GeoPackage·Shapefile·CSV 내보내기, 다시 읽어 원본과 건수·값 대조 |
 | 게시 | `src/publish.py` | 검증 통과 시 Hosted Feature Layer 2개를 File Geodatabase로 게시, 이후 같은 항목 덮어쓰기, 항목 정보(출처·이용 조건·기준일) 작성 |
@@ -61,6 +62,8 @@ API 키와 ArcGIS 로그인 정보는 `.env`로 받습니다(`.env.example` 참�
 - 기준점 대조: 역 도로명주소의 괄호 안 법정동과 실제 위치 대조(242쌍, 모두 경계에서 96m 안)
 - 지표 상식: `cover_500m` 0～100, `near_dist_m` 최대값이 완충 거리(5km) 미만, 동 안 역 수 합 = 서울 안 역 수
 - 최신성: 경계 수집일, 역별 데이터 기준일
+
+**PostGIS 교차 검증**: 같은 원본을 Docker의 PostGIS에 넣고 지표를 SQL(`ST_Transform`, `ST_DWithin`, `ST_PointOnSurface`와 KNN `<->`, `ST_Within`, `ST_Buffer`·`ST_Intersection`)로 다시 계산했습니다. 467개 동 모두 Python 결과와 완전히 일치합니다([`outputs/postgis_crosscheck.md`](outputs/postgis_crosscheck.md)). 버퍼 원의 분할 수만 바꿔도 251개 동이 달라지는 것을 확인해, 비교가 작은 차이도 잡는다는 것을 검증했습니다.
 
 **발견한 원본 오류**: 공공데이터 원본에서 4호선 이촌역 좌표가 신용산역과 14m, 5호선 마곡역 좌표가 발산역과 7m 떨어져 있었습니다(실제로는 각각 1km 안팎). 서울시 역사마스터와 대조해 보정했고, 보정하지 않은 데이터로 검증을 돌리면 실패하는 것을 확인했습니다. 보정 내역: [`outputs/station_fixes.csv`](outputs/station_fixes.csv). 또 7호선 이수역이 `이수`와 `총신대입구(이수)` 두 행으로 중복되어 있어, 한 역이 두 번 세어지던 것을 독립 재검증에서 찾아 고쳤습니다.
 
