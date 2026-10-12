@@ -126,7 +126,7 @@ def main() -> None:
         print(f"{action}: {cfg['title']} {n}건 → {item.homepage}")
 
     STATE.parent.mkdir(parents=True, exist_ok=True)
-    STATE.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
+    STATE.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     print(f"항목 ID 저장 → {STATE.relative_to(ROOT)} (공유 범위는 그대로: 소유자만)")
 
 

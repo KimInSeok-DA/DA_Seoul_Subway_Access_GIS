@@ -123,7 +123,7 @@ def main() -> None:
     OUT.parent.mkdir(parents=True, exist_ok=True)
     FIXES.parent.mkdir(parents=True, exist_ok=True)
     st.to_file(OUT, driver="GeoJSON")
-    fixes.to_csv(FIXES, index=False, encoding="utf-8-sig")
+    fixes.to_csv(FIXES, index=False, encoding="utf-8-sig", lineterminator="\n")
 
     print(f"원본 {pd.read_excel(NAT, usecols=[0]).shape[0]}행 → 중복 행 제거 후 {len(nat)}행 → 역 {len(st)}개 (좌표 보정 {len(fixes)}행)")
     print(f"저장 → {OUT.relative_to(ROOT)}, {FIXES.relative_to(ROOT)}")

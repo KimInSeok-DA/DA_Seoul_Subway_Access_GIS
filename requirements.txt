@@ -10,3 +10,4 @@ psycopg==3.3.6
 psycopg-binary==3.3.6
 sqlalchemy==2.1.4
 geoalchemy2==0.20.0
+numpy==2.5.4

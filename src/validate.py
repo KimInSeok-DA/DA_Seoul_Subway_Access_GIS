@@ -127,7 +127,7 @@ def main() -> int:
         "| 검사 | 결과 | 내용 |", "|---|---|---|",
     ] + [f"| {n} | {'통과' if ok else '**실패**'} | {d} |" for n, ok, d in results]
     REPORT.parent.mkdir(parents=True, exist_ok=True)
-    REPORT.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    REPORT.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 
     for n, ok, d in results:
         print(f"[{'PASS' if ok else 'FAIL'}] {n} — {d}")

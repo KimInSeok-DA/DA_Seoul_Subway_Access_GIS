@@ -68,7 +68,7 @@ def main() -> int:
         lines += ["", "최근접 역 이름이 다른 동:", ""] + [
             f"- {r.emd_nm_py}: Python {r.near_station_py} {r.near_dist_m_py}m / SQL {r.near_station_sql} {r.near_dist_m_sql}m"
             for r in name_diff.itertuples()]
-    REPORT.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    REPORT.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 
     for n, ok, d in checks:
         print(f"[{'PASS' if ok else 'FAIL'}] {n} — {d}")

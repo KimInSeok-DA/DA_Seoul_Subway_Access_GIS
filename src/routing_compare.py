@@ -165,7 +165,7 @@ def main() -> int:
         f"- 가장 작은 3개 구: " + ", ".join(f"{k} {v:.2f}배" for k, v in gu.head(3).items()),
         f"- 가장 큰 3개 구: " + ", ".join(f"{k} {v:.2f}배" for k, v in gu.tail(3).items()),
     ]
-    REPORT.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    REPORT.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     print("\n".join(lines[6:16]))
     print(f"→ {REPORT.relative_to(ROOT)} (동별 값은 {RAW.relative_to(ROOT)}에만)")
     return 1 if n_fail else 0
