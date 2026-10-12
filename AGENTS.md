@@ -1,6 +1,6 @@
 # 작업 지시
 
-서울 법정동별 지하철 접근성 공간데이터를 공공데이터로 만들고, ArcGIS Online에 Feature Layer·Web Map·앱으로 공개하는 개인 프로젝트다. **이 저장소는 공개 예정이다.** 올리는 모든 파일은 누구나 볼 수 있다.
+서울 법정동별 지하철 접근성 공간데이터를 공공데이터로 만들고, 검증을 통과한 결과를 ArcGIS(Hosted Feature Layer·Web Map)와 공개 지도(GitHub Pages)로 내보내는 개인 프로젝트다. **이 저장소는 공개다.** 올리는 모든 파일은 누구나 볼 수 있다.
 
 ## 시작할 때 읽는 순서
 
@@ -32,7 +32,8 @@
 - API 키·ArcGIS 로그인 정보는 `.env`로만 받는다
 - 마크다운 범위 표기는 `～`(전각 물결). 반각 `~` 두 개는 GitHub에서 취소선이 된다
 - 작성자가 직접 설명할 수 있는 단순한 방법을 우선한다
-- Git: 커밋·PR에 AI 공동 작성자나 AI 이름을 넣지 않는다(`.claude/settings.json`의 attribution 끔, `.githooks/` 사용, `git config core.hooksPath .githooks`, `--no-verify` 금지). 커밋·푸시는 사용자가 요청할 때만. ArcGIS 항목의 공개(Everyone) 전환과 GitHub 저장소 공개는 사용자가 한다
+- 단계를 넘기기 전에 결과를 다른 방법으로 다시 계산해 확인한다(같은 코드를 다시 돌리는 것은 검증이 아니다)
+- Git: 커밋·PR에 AI 공동 작성자나 AI 이름을 넣지 않는다(`.claude/settings.json`의 attribution 끔, `.githooks/` 사용, `git config core.hooksPath .githooks`, `--no-verify` 금지). 커밋·푸시는 사용자가 요청할 때만("진행해"는 작업만 뜻한다). 작업 단위마다 브랜치 → PR. ArcGIS 항목의 공개(Everyone) 전환과 GitHub 저장소 공개는 사용자가 한다
 
 ## 작업을 마칠 때
 

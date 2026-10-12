@@ -2,7 +2,18 @@
 
 > **공개 지도**: https://kiminseok-da.github.io/DA_Seoul_Subway_Access_GIS/ (로그인 없이 열림)
 
-서울 법정동마다 지하철 접근성 지표를 공공데이터로 계산하고, ArcGIS Online에 Feature Layer·Web Map·앱으로 공개하는 개인 프로젝트입니다.
+서울 법정동 467개마다 지하철 접근성 지표를 공공데이터로 계산하고, 자동 검증을 통과한 결과만 ArcGIS(Hosted Feature Layer·Web Map)와 공개 지도로 내보내는 개인 프로젝트입니다.
+
+## 한눈에
+
+| 항목 | 내용 |
+|---|---|
+| 파이프라인 | 공공데이터 API·파일 수집 → 역 정제·좌표 보정 → 지표 계산(EPSG:5179) → 자동 검증 21개 → 공개 지도·내려받기 → (선택) ArcGIS 게시. `python src/run.py` 한 번, 약 50초 |
+| 결과 | 법정동 467개, 분석 역 389개(서울 안 307 + 서울 밖 5km 안 82). 가장 가까운 역까지 직선거리 중앙값 412m, 최대 2,928m(종로구 평창동) |
+| 검증 | 21개 자동 검사, PostGIS(SQL)로 다시 계산해 467개 동 완전 일치, ArcGIS 서버 값과 로컬 값 전수 일치 |
+| 원본 오류 발견 | 이촌역(4호선)·마곡역(5호선) 좌표 오류, 이수역(7호선) 중복 행 → 서울시 데이터와 대조해 보정, 다시 생기면 검증이 막음 |
+| 도보 비교 | ArcGIS 경로 서비스 1,401건: 실제 도보 거리는 직선의 중앙값 1.36배(412m → 618m) |
+| 공개 | [공개 지도](https://kiminseok-da.github.io/DA_Seoul_Subway_Access_GIS/)(Leaflet), GeoPackage·Shapefile·CSV 내려받기, ArcGIS 결과 화면(아래) |
 
 ## 지표
 
@@ -29,15 +40,22 @@
 
 ## 실행
 
+**준비**
+
+1. 역 원본: 공공데이터포털 [전국도시철도역사정보표준데이터](https://www.data.go.kr/data/15013205/standard.do)에서 전체 파일(xlsx)을 받아 `data/raw/전체_도시철도역사정보_20260630.xlsx`로 둡니다(원본이라 저장소에 없음. 파일 이름이 다르면 `src/build_stations.py`의 `NAT`를 고칩니다)
+2. `.env.example`을 `.env`로 복사하고 값을 넣습니다: `VWORLD_API_KEY`(VWorld 인증키), `SEOUL_API_KEY`(서울 열린데이터광장 인증키). ArcGIS 게시·도보 비교를 할 때만 `ARCGIS_*`(ArcGIS Location Platform 계정), PostGIS 교차 검증을 할 때만 `POSTGIS_PASSWORD`
+
+**실행** (Windows 기준, Python 3.12)
+
 ```
 uv venv --python 3.12 .venv
 uv pip install --python .venv -r requirements.txt
-.venv/Scripts/python src/run.py                 # 수집 → 정제 → 지표 → 검증 (약 40초)
-.venv/Scripts/python src/run.py --skip-collect  # API를 다시 부르지 않고 data/raw/ 캐시로
-.venv/Scripts/python src/run.py --publish       # 검증을 통과했을 때만 ArcGIS Online 레이어 갱신
+.venv/Scripts/python src/run.py                 # 수집 → 정제 → 지표 → 검증 → 공개 지도·내려받기 파일 (약 50초)
+.venv/Scripts/python src/run.py --skip-collect  # 한 번 수집한 뒤: API를 다시 부르지 않고 data/raw/ 캐시로
+.venv/Scripts/python src/run.py --publish       # 검증을 통과했을 때만 ArcGIS 레이어 갱신
 ```
 
-API 키와 ArcGIS 로그인 정보는 `.env`로 받습니다(`.env.example` 참고).
+선택 검증: `docker compose up -d` 후 `.venv/Scripts/python src/crosscheck_postgis.py`(PostGIS 교차 검증), `.venv/Scripts/python src/routing_compare.py`(도보 비교, ArcGIS 경로 서비스 약 1,400건 사용. 저장한 응답으로 다시 계산만 하려면 `--from-raw`)
 
 | 단계 | 파일 | 하는 일 |
 |---|---|---|
@@ -132,6 +150,37 @@ Python(`src/publish.py`)으로 Hosted Feature Layer 2개를 게시·갱신하고
 - GTX-A는 기준 데이터에 없어 넣지 않았습니다. 서울 안 GTX 역은 기존 역과 같은 자리라 영향이 작습니다
 - 역 데이터의 기준일이 운영기관마다 2022～2026으로 다릅니다
 - 법정동은 크기가 0.01～18㎢로 차이가 커서, 산지가 넓은 동(평창동 등)은 `near_dist_m`가 크게 나옵니다
+- ArcGIS 항목은 Location Platform 무료 계정의 공유 제한으로 비공개입니다(결과는 캡처와 공개 지도로 제공)
+
+## 의사결정 기록
+
+| 문서 | 내용 |
+|---|---|
+| [1011_01 작업 범위](docs/의사결정/1011_01_작업범위.md) | 핵심과 확장(WFS·다중 포맷·PostGIS·Routing·공개 지도), Web Scene 제외 |
+| [1011_02 역 정제 규칙](docs/의사결정/1011_02_역_정제_규칙.md) | 이름 정규화, 서울시 데이터와 좌표 대조, 중복 행 제거, 역 통합 |
+| [1011_03 데이터 이용 조건과 경계](docs/의사결정/1011_03_데이터_이용조건과_경계.md) | 4개 데이터 이용 조건, VWorld WFS 수집과 코드 대조 |
+| [1011_04 지표와 검증](docs/의사결정/1011_04_지표와_검증.md) | 지표 정의, 검증 21개, 독립 재검증, 음성 시험 |
+| [1011_05 ArcGIS 게시](docs/의사결정/1011_05_ArcGIS_게시.md) | 계정 선택, FGDB 업로드(코드 타입 유지), 덮어쓰기, 공개 공유 제한 |
+| [1012_01 공개 지도](docs/의사결정/1012_01_공개_지도.md) | GitHub Pages·Leaflet, 배경지도, 경계 단순화 1m |
+| [1012_02 다중 포맷](docs/의사결정/1012_02_다중_포맷.md) | GPKG·Shapefile·CSV, 같은 데이터면 같은 파일 |
+| [1012_03 PostGIS 교차 검증](docs/의사결정/1012_03_PostGIS_교차검증.md) | SQL 재계산, 467개 동 일치, 비교 민감도 시험 |
+| [1012_04 도보 거리 비교](docs/의사결정/1012_04_도보_거리_비교.md) | ArcGIS 경로 서비스, 이상치, 요약만 공개 |
+
+## 회고
+
+**잘 된 것**
+- 검증을 파이프라인 안에 넣었다. 검증이 실패하면 공개 지도·내려받기·ArcGIS 게시가 모두 멈춘다
+- 같은 결과를 다른 방법(측지 거리, 다른 공간 함수, 격자 표본, PostGIS SQL, 서버 값 전수 대조)으로 다시 계산했고, 이 과정에서 원본 중복 행(이수역)으로 인한 이중 집계를 찾았다
+- 검사를 만들면 오류를 되돌린 데이터로 일부러 실패시키는 시험(음성 시험)을 같이 했다
+
+**아쉬운 것**
+- ArcGIS 계정을 고를 때 게시 권한만 확인하고 공개 공유 지원 여부를 확인하지 않아, 웹맵을 만든 뒤에야 Location Platform은 레이어 공개가 안 된다는 것을 알았다
+- 공개 지도의 경계 단순화(처음 5m)를 처음부터 동별 면적 차이로 확인하지 않았다
+- 동 대표점이 한강변에 찍히는 동은 거리 지표가 주거지 기준과 다를 수 있다
+
+**다음에는**
+- 계정·서비스를 고를 때 "게시·공유·이용 조건"을 점검표로 먼저 확인한다
+- 대표점 대신 건물·인구 가중 중심을 쓰고, 도보 거리를 공개 지표로 넣을 수 있는지 이용 조건을 확인한다
 
 ## AI 협업 방식
 
@@ -146,3 +195,4 @@ Python(`src/publish.py`)으로 Hosted Feature Layer 2개를 게시·갱신하고
 
 - 커밋에는 AI 공동 작성자 표시를 넣지 않습니다(`.claude/settings.json`, `.githooks/`). 대신 AI가 한 일은 위 기록에 따로 남깁니다
 - API 키·로그인 정보·비공개 메모는 `.gitignore`로 저장소에서 뺐습니다
+- AI가 만든 결과는 단계마다 다른 방법으로 다시 계산해 확인했습니다. AI가 틀린 것(운전 거리를 도보로 계산할 뻔한 것, 계정의 공개 공유 제한을 놓친 것, 행이 섞일 수 있는 코드 등)과 잡은 방법은 활용 기록에 그대로 남겼습니다

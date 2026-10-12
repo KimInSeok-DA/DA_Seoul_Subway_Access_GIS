@@ -99,8 +99,8 @@ def main() -> None:
     rep = emd.to_crs(5179).representative_point().to_crs(4326)
     emd_csv = emd.drop(columns="geometry").assign(rep_lon=rep.x.round(6), rep_lat=rep.y.round(6))
     st_csv = st.drop(columns="geometry").assign(lon=st.geometry.x.round(6), lat=st.geometry.y.round(6))
-    emd_csv.to_csv(OUT / f"{BASE}_emd.csv", index=False, encoding="utf-8-sig")
-    st_csv.to_csv(OUT / f"{BASE}_stations.csv", index=False, encoding="utf-8-sig")
+    emd_csv.to_csv(OUT / f"{BASE}_emd.csv", index=False, encoding="utf-8-sig", lineterminator="\n")
+    st_csv.to_csv(OUT / f"{BASE}_stations.csv", index=False, encoding="utf-8-sig", lineterminator="\n")
     same(emd_csv, pd.read_csv(OUT / f"{BASE}_emd.csv", dtype={"bjd_cd": str, "sgg_cd": str}), EMD_COLS, "CSV emd")
     same(st_csv, pd.read_csv(OUT / f"{BASE}_stations.csv").fillna({"ref_date": "None"}).replace({"ref_date": {"None": None}}),
          [c for c in ST_COLS if c != "ref_date"], "CSV stations")

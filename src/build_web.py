@@ -63,6 +63,7 @@ def main() -> None:
         f"const EMD = {json.dumps(to_fc(simp, EMD_COLS), ensure_ascii=False, separators=(',', ':'))};\n"
         f"const STATIONS = {json.dumps(to_fc(st, ST_COLS), ensure_ascii=False, separators=(',', ':'))};\n",
         encoding="utf-8",
+        newline="\n",
     )
     print(f"법정동 {len(simp)}개(면적 차이 최대 {worst:.2f}%), 역 {len(st)}개 → {OUT.relative_to(ROOT)} ({OUT.stat().st_size / 1e6:.2f}MB)")
 
